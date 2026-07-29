@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>じぶんチェックイン</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#3730a3" />
+<style>
+  :root {
+    --bg: #0f1023;
+    --card: #1c1d3a;
+    --accent: #6366f1;
+    --accent2: #818cf8;
+    --text: #f1f1f8;
+    --muted: #9797b8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+    background: linear-gradient(160deg, #0f1023, #1a1b3a 60%, #241a4a);
+    color: var(--text);
+    min-height: 100vh;
+    padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding-top: 28px; }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
+
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+  #question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    border-radius: 12px;
+    border: 1px solid #33355c;
+    background: #14152b;
+    color: var(--text);
+    padding: 12px;
+    font-size: 1rem;
+    resize: vertical;
+    font-family: inherit;
+  }
+  button {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #submit-btn {
+    background: var(--accent);
+    color: white;
+    width: 100%;
+    margin-top: 12px;
+  }
+  #submit-btn:disabled { opacity: 0.6; }
+
+  #install-banner {
+    display: none;
+    background: #2a2350;
+    border: 1px solid #4c3d8f;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  #sub-status { font-size: 0.85rem; color: var(--muted); margin-bottom: 10px; }
+  #subscribe-btn {
+    background: transparent;
+    border: 1px solid var(--accent2);
+    color: var(--accent2);
+  }
+
+  h2 { font-size: 1rem; color: var(--muted); margin: 24px 0 10px; }
+  #history-list { list-style: none; margin: 0; padding: 0; }
+  #history-list li {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .h-date { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; }
+  .h-q { font-size: 0.82rem; color: var(--accent2); margin-bottom: 4px; }
+  .h-a { font-size: 0.95rem; white-space: pre-wrap; }
+  .empty { color: var(--muted); text-align: center; }
+
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #2a2350;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    opacity: 0;
+    transition: all 0.25s ease;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>じぶんチェックイン</h1>
+    <p class="sub">ふと届く質問に、思いついたまま答えるだけ</p>
+
+    <div id="install-banner">
+      通知を受け取るには、Safari の共有メニューから「ホーム画面に追加」してこのアイコンから開いてください。
+    </div>
+
+    <div class="card">
+      <div id="question-text">読み込み中...</div>
+      <textarea id="answer-input" placeholder="思ったことをそのまま書いてOK"></textarea>
+      <button id="submit-btn">記録する</button>
+    </div>
+
+    <div class="card">
+      <div id="sub-status"></div>
+      <button id="subscribe-btn">通知を有効にする</button>
+    </div>
+
+    <h2>これまでの記録</h2>
+    <ul id="history-list"></ul>
+  </div>
+
+  <div id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

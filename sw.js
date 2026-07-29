@@ -1,4 +1,4 @@
-const CACHE_NAME = "checkin-shell-v1";
+const CACHE_NAME = "checkin-shell-v2";
 const SHELL_FILES = ["./", "./index.html", "./app.js", "./manifest.json"];
 
 self.addEventListener("install", (event) => {

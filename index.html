@@ -7,139 +7,305 @@
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="theme-color" content="#3730a3" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="theme-color" content="#ffffff" />
 <style>
   :root {
-    --bg: #0f1023;
-    --card: #1c1d3a;
-    --accent: #6366f1;
-    --accent2: #818cf8;
-    --text: #f1f1f8;
-    --muted: #9797b8;
+    --bg: #f7f8fc;
+    --card: #ffffff;
+    --text: #22223b;
+    --muted: #8e8ea8;
+    --line: #ecedf5;
+    --accent: #6c5ce7;
+    --accent-soft: #f0edff;
+    --coral: #ff6b6b;
+    --mint: #00b894;
+    --amber: #fdcb6e;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
-    background: linear-gradient(160deg, #0f1023, #1a1b3a 60%, #241a4a);
+    background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+    padding: 0 16px calc(40px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 480px; margin: 0 auto; padding-top: 28px; }
-  h1 { font-size: 1.3rem; margin: 0 0 4px; }
-  .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
+  .wrap { max-width: 480px; margin: 0 auto; padding-top: calc(28px + env(safe-area-inset-top)); }
+
+  header { margin-bottom: 20px; }
+  h1 { font-size: 1.35rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 0.85rem; margin: 0; }
 
   .card {
     background: var(--card);
-    border-radius: 18px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-  }
-  #question-text {
-    font-size: 1.15rem;
-    font-weight: 600;
-    line-height: 1.5;
+    border-radius: 20px;
+    padding: 22px 20px;
     margin-bottom: 14px;
+    border: 1px solid var(--line);
+    box-shadow: 0 2px 10px rgba(34, 34, 59, 0.04);
   }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  #question-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.55;
+    margin-bottom: 18px;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---- 自由記述 ---- */
   textarea {
     width: 100%;
-    min-height: 100px;
-    border-radius: 12px;
-    border: 1px solid #33355c;
-    background: #14152b;
+    min-height: 110px;
+    border-radius: 14px;
+    border: 1.5px solid var(--line);
+    background: #fafbff;
     color: var(--text);
-    padding: 12px;
+    padding: 13px;
     font-size: 1rem;
     resize: vertical;
     font-family: inherit;
+    transition: border-color 0.15s;
   }
-  button {
-    border: none;
-    border-radius: 12px;
-    padding: 12px 18px;
-    font-size: 1rem;
+  textarea:focus { outline: none; border-color: var(--accent); background: #fff; }
+
+  /* ---- 選択式 ---- */
+  .choices { display: flex; flex-wrap: wrap; gap: 9px; }
+  .choice-btn {
+    border: 1.5px solid var(--line);
+    background: #fff;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 11px 17px;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
   }
+  .choice-btn:active { transform: scale(0.96); }
+  .choice-btn.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.28);
+  }
+
+  /* ---- 5段階 ---- */
+  .scale-row { display: flex; justify-content: space-between; gap: 8px; }
+  .scale-btn {
+    flex: 1;
+    aspect-ratio: 1;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    color: var(--muted);
+    border-radius: 16px;
+    font-size: 1.15rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .scale-btn:active { transform: scale(0.94); }
+  .scale-btn.selected {
+    background: linear-gradient(135deg, #6c5ce7, #8b7bff);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(108, 92, 231, 0.3);
+    transform: translateY(-2px);
+  }
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 9px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  /* ---- ボタン ---- */
+  button { font-family: inherit; }
   #submit-btn {
     background: var(--accent);
-    color: white;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 1rem;
+    font-weight: 700;
     width: 100%;
-    margin-top: 12px;
+    margin-top: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 14px rgba(108, 92, 231, 0.25);
   }
-  #submit-btn:disabled { opacity: 0.6; }
+  #submit-btn:active { transform: scale(0.98); }
+  #submit-btn:disabled {
+    background: #d8d9e8;
+    box-shadow: none;
+    cursor: default;
+  }
+  #shuffle-btn {
+    display: block;
+    margin: 12px auto 0;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px;
+  }
 
+  /* ---- 通知 ---- */
   #install-banner {
     display: none;
-    background: #2a2350;
-    border: 1px solid #4c3d8f;
-    border-radius: 14px;
-    padding: 14px;
+    background: #fff8e8;
+    border: 1.5px solid #ffe4a8;
+    border-radius: 16px;
+    padding: 14px 16px;
     font-size: 0.85rem;
-    line-height: 1.6;
-    margin-bottom: 16px;
+    line-height: 1.65;
+    margin-bottom: 14px;
+    color: #8a6d1f;
   }
-  #sub-status { font-size: 0.85rem; color: var(--muted); margin-bottom: 10px; }
+  .notif-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  #sub-status { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
   #subscribe-btn {
-    background: transparent;
-    border: 1px solid var(--accent2);
-    color: var(--accent2);
+    background: var(--accent-soft);
+    border: none;
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
   }
 
-  h2 { font-size: 1rem; color: var(--muted); margin: 24px 0 10px; }
+  /* ---- 履歴 ---- */
+  .history-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 28px 0 12px;
+    gap: 12px;
+  }
+  h2 { font-size: 1rem; margin: 0; }
+  #day-select {
+    border: 1.5px solid var(--line);
+    background: #fff;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  #day-select:focus { outline: none; border-color: var(--accent); }
+
   #history-list { list-style: none; margin: 0; padding: 0; }
   #history-list li {
     background: var(--card);
-    border-radius: 14px;
-    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px 16px;
     margin-bottom: 10px;
   }
-  .h-date { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; }
-  .h-q { font-size: 0.82rem; color: var(--accent2); margin-bottom: 4px; }
-  .h-a { font-size: 0.95rem; white-space: pre-wrap; }
-  .empty { color: var(--muted); text-align: center; }
+  .h-time { font-size: 0.72rem; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
+  .h-q { font-size: 0.85rem; color: var(--accent); font-weight: 700; margin-bottom: 6px; line-height: 1.5; }
+  .h-a { font-size: 0.97rem; white-space: pre-wrap; line-height: 1.6; }
+  .h-scale {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+  .h-bar { display: flex; gap: 3px; }
+  .h-dot { width: 20px; height: 6px; border-radius: 3px; background: var(--line); }
+  .h-dot.on { background: var(--accent); }
+  .h-chip {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 5px 13px;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .empty {
+    color: var(--muted);
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 28px 0;
+    background: none;
+    border: 1.5px dashed var(--line) !important;
+  }
 
   #toast {
     position: fixed;
-    bottom: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: #2a2350;
-    color: white;
-    padding: 10px 18px;
+    background: var(--text);
+    color: #fff;
+    padding: 12px 22px;
     border-radius: 999px;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
+    font-weight: 600;
     opacity: 0;
     transition: all 0.25s ease;
     pointer-events: none;
+    box-shadow: 0 6px 20px rgba(34, 34, 59, 0.2);
+    z-index: 10;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>じぶんチェックイン</h1>
-    <p class="sub">ふと届く質問に、思いついたまま答えるだけ</p>
+    <header>
+      <h1>じぶんチェックイン ✳︎</h1>
+      <p class="sub">ふと届く質問に、思いついたまま答えるだけ</p>
+    </header>
 
     <div id="install-banner">
-      通知を受け取るには、Safari の共有メニューから「ホーム画面に追加」してこのアイコンから開いてください。
+      📲 通知を受け取るには、Safari の共有ボタンから「ホーム画面に追加」して、そのアイコンから開いてください。
     </div>
 
     <div class="card">
+      <div class="badge" id="question-badge">—</div>
       <div id="question-text">読み込み中...</div>
-      <textarea id="answer-input" placeholder="思ったことをそのまま書いてOK"></textarea>
+      <div id="input-area"></div>
       <button id="submit-btn">記録する</button>
+      <button id="shuffle-btn">↻ 別の質問にする</button>
     </div>
 
-    <div class="card">
-      <div id="sub-status"></div>
-      <button id="subscribe-btn">通知を有効にする</button>
+    <div class="card notif-card">
+      <div id="sub-status">通知の状態を確認中...</div>
+      <button id="subscribe-btn">通知をON</button>
     </div>
 
-    <h2>これまでの記録</h2>
+    <div class="history-head">
+      <h2>これまでの記録</h2>
+      <select id="day-select"></select>
+    </div>
     <ul id="history-list"></ul>
   </div>
 

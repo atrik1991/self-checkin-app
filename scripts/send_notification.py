@@ -22,7 +22,7 @@ import requests
 from pywebpush import WebPushException, webpush
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
-SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
+SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"].strip()
 VAPID_PRIVATE_KEY_PEM = os.environ["VAPID_PRIVATE_KEY"]
 VAPID_SUBJECT = os.environ.get("VAPID_SUBJECT", "mailto:admin@example.com")
 APP_URL = os.environ.get("APP_URL", "").rstrip("/")
@@ -35,11 +35,16 @@ MIN_GAP_MINUTES = 25
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
+# キーは2形式ある:
+#   - 旧 service_role キー(JWT。"eyJ..." で始まる)
+#   - 新 secret キー("sb_secret_..."。JWTではないので Authorization ヘッダに載せられない)
+# apikey ヘッダは両方で必須。Authorization は JWT のときだけ付ける。
 HEADERS = {
     "apikey": SERVICE_KEY,
-    "Authorization": f"Bearer {SERVICE_KEY}",
     "Content-Type": "application/json",
 }
+if SERVICE_KEY.startswith("eyJ"):
+    HEADERS["Authorization"] = f"Bearer {SERVICE_KEY}"
 
 
 def now_jst():

@@ -35,7 +35,7 @@ Settings → Secrets and variables → Actions → New repository secret で以�
 | Name | 値 |
 |---|---|
 | `SUPABASE_URL` | `https://eabpkpfshikhhpowljan.supabase.co` |
-| `SUPABASE_SERVICE_KEY` | Supabase ダッシュボード → Settings → API → `service_role` キー(**絶対に公開しない**) |
+| `SUPABASE_SERVICE_KEY` | Supabase ダッシュボード → **Settings → API Keys** で取得(**絶対に公開しない**)。新しい `sb_secret_...` キー、旧 `service_role` キーのどちらでも動く |
 | `VAPID_PRIVATE_KEY` | `vapid_private.pem` の中身をそのまま(ローカルに生成済み、Gitには含まれていない) |
 | `VAPID_SUBJECT` | `mailto:自分のメールアドレス` |
 

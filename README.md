@@ -10,6 +10,17 @@
 - `.github/workflows/send-checkin.yml` — 20分おきに送信スクリプトを実行するcron
 - Supabase (project `eabpkpfshikhhpowljan`) — テーブル: `checkin_questions` / `push_subscriptions` / `checkin_responses` / `notification_schedule` / `notification_log`
 
+## 質問の種類(全100問)
+
+| qtype | 数 | UI | 保存内容 |
+|---|---|---|---|
+| `text` | 50 | 自由記述のテキストエリア | `answer` に本文 |
+| `choice` | 25 | 選択肢のボタン(単一選択) | `answer` に選んだラベル、`answer_value` に選択番号 |
+| `scale` | 25 | 1〜5の5段階ボタン | `answer` に数値、`answer_value` に同じ数値 |
+
+`choice` の選択肢は `options` カラム(jsonb)に `{"choices":[...]}`、`scale` の両端ラベルは `{"min":"...","max":"..."}` で入れる。
+`checkin_responses` にも `qtype` と `question_text` をスナップショットとして保存しているので、後から質問を編集・削除しても過去の記録は壊れない。
+
 ## セットアップ手順
 
 ### 1. GitHub Pages を有効化
@@ -49,3 +60,24 @@ Variables タブ(任意)に `APP_URL` として Pages の URL を追加してお
 ## 質問を追加する
 
 Supabase の `checkin_questions` テーブルに `insert` するだけ。`active = false` で出題を止められる。
+
+```sql
+-- 自由記述
+insert into checkin_questions (text, category, qtype)
+values ('最近うまくいってることは?', 'mood', 'text');
+
+-- 選択式
+insert into checkin_questions (text, category, qtype, options)
+values ('今の集中を邪魔してるのは?', 'work', 'choice',
+        '{"choices":["通知","疲れ","迷い","人の予定"]}');
+
+-- 5段階
+insert into checkin_questions (text, category, qtype, options)
+values ('今週の満足度は?', 'general', 'scale',
+        '{"min":"不満","max":"大満足"}');
+```
+
+## 履歴の見え方
+
+「これまでの記録」は日別で、右のプルダウンから直近5日分を切り替えられる(`app.js` の `HISTORY_DAYS` で変更可)。
+5段階はドットバー、選択式はチップ、自由記述はそのまま本文で表示される。

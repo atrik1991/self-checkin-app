@@ -15,7 +15,7 @@
 | qtype | 数 | UI | 保存内容 |
 |---|---|---|---|
 | `text` | 50 | 自由記述のテキストエリア | `answer` に本文 |
-| `choice` | 25 | 選択肢のボタン(単一選択) | `answer` に選んだラベル、`answer_value` に選択番号 |
+| `choice` | 25 | 選択肢のボタン(21問は複数選択可) | 単一選択: `answer` にラベル、`answer_value` に選択番号<br>複数選択: `answer` にラベルを `、` 区切りで連結、`answer_value` は `null` |
 | `scale` | 25 | 1〜5の5段階ボタン | `answer` に数値、`answer_value` に同じ数値 |
 
 `choice` の選択肢は `options` カラム(jsonb)に `{"choices":[...]}`、`scale` の両端ラベルは `{"min":"...","max":"..."}` で入れる。
@@ -66,10 +66,15 @@ Supabase の `checkin_questions` テーブルに `insert` するだけ。`active
 insert into checkin_questions (text, category, qtype)
 values ('最近うまくいってることは?', 'mood', 'text');
 
--- 選択式
+-- 選択式(単一選択)
 insert into checkin_questions (text, category, qtype, options)
 values ('今の集中を邪魔してるのは?', 'work', 'choice',
         '{"choices":["通知","疲れ","迷い","人の予定"]}');
+
+-- 選択式(複数選択可): options に "multi": true を足すだけ
+insert into checkin_questions (text, category, qtype, options)
+values ('今週うまくいったことは?', 'general', 'choice',
+        '{"choices":["仕事","健康","家族","学び"],"multi":true}');
 
 -- 5段階
 insert into checkin_questions (text, category, qtype, options)

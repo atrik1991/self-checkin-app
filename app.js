@@ -185,7 +185,7 @@ async function subscribeToPush() {
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
     });
     const json = sub.toJSON();
-    await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions?on_conflict=endpoint`, {
       method: "POST",
       headers: sbHeaders({
         Prefer: "resolution=merge-duplicates,return=minimal",

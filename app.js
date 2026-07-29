@@ -6,6 +6,7 @@ const VAPID_PUBLIC_KEY =
   "BJAgBlwx6vt5wI7j5RPPrX_zeicMtp0JBWNrli-jQbWbQsf4X6j7cF8woJXlunn331eSOrN3DDAKmvbtpoXfm1U";
 
 const HISTORY_DAYS = 5; // UI上で遡れる日数
+const CHOICE_SEP = "、"; // 複数選択の保存・表示に使う区切り(選択肢の文言に含まれない文字)
 
 const CATEGORY_META = {
   mood: { label: "気分", emoji: "😊" },
@@ -138,7 +139,11 @@ function renderQuestion() {
     area.appendChild(ta);
     $("#submit-btn").disabled = true;
   } else if (qtype === "choice") {
-    const choices = (currentQuestion.options && currentQuestion.options.choices) || [];
+    const opts = currentQuestion.options || {};
+    const choices = opts.choices || [];
+    const isMulti = opts.multi === true;
+    const picked = new Set();
+
     const wrap = document.createElement("div");
     wrap.className = "choices";
     choices.forEach((c, i) => {
@@ -147,15 +152,36 @@ function renderQuestion() {
       btn.className = "choice-btn";
       btn.textContent = c;
       btn.addEventListener("click", () => {
-        wrap.querySelectorAll(".choice-btn").forEach((b) => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        selectedValue = i + 1;
-        selectedLabel = c;
-        $("#submit-btn").disabled = false;
+        if (isMulti) {
+          if (picked.has(c)) {
+            picked.delete(c);
+            btn.classList.remove("selected");
+          } else {
+            picked.add(c);
+            btn.classList.add("selected");
+          }
+          // 選択順ではなく選択肢の並び順で保存して、表示のブレをなくす
+          selectedLabel = choices.filter((x) => picked.has(x)).join(CHOICE_SEP);
+          selectedValue = null; // 複数選択では単一の数値に落とせないので持たない
+          $("#submit-btn").disabled = picked.size === 0;
+        } else {
+          wrap.querySelectorAll(".choice-btn").forEach((b) => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          selectedValue = i + 1;
+          selectedLabel = c;
+          $("#submit-btn").disabled = false;
+        }
       });
       wrap.appendChild(btn);
     });
     area.appendChild(wrap);
+
+    if (isMulti) {
+      const hint = document.createElement("div");
+      hint.className = "multi-hint";
+      hint.textContent = "あてはまるものをいくつでも選べます";
+      area.appendChild(hint);
+    }
     $("#submit-btn").disabled = true;
   } else if (qtype === "scale") {
     const opts = currentQuestion.options || {};
@@ -197,7 +223,8 @@ async function submitAnswer() {
     answer = input ? input.value.trim() : "";
     if (!answer) return;
   } else {
-    if (selectedValue == null) return;
+    // 複数選択では answerValue が null になるのでラベル側で判定する
+    if (!selectedLabel) return;
     answer = selectedLabel;
     answerValue = selectedValue;
   }
@@ -317,7 +344,11 @@ function renderDay(key) {
       ).join("");
       answerHtml = `<span class="h-scale"><span class="h-bar">${dots}</span>${row.answer_value}/5</span>`;
     } else if (row.qtype === "choice") {
-      answerHtml = `<span class="h-chip">${escapeHtml(row.answer)}</span>`;
+      const chips = row.answer
+        .split(CHOICE_SEP)
+        .map((s) => `<span class="h-chip">${escapeHtml(s)}</span>`)
+        .join("");
+      answerHtml = `<div class="h-chips">${chips}</div>`;
     } else {
       answerHtml = escapeHtml(row.answer);
     }

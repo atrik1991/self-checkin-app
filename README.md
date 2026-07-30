@@ -23,6 +23,8 @@
 `choice` の選択肢は `options` カラム(jsonb)に `{"choices":[...]}`、`scale` の両端ラベルは `{"min":"...","max":"..."}` で入れる。
 `checkin_responses` にも `qtype` と `question_text` をスナップショットとして保存しているので、後から質問を編集・削除しても過去の記録は壊れない。
 
+別のSupabaseアカウントへ移す手順は [MIGRATION.md](MIGRATION.md) にある。
+
 ## セットアップ手順
 
 ### 1. GitHub Pages を有効化

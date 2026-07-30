@@ -7,7 +7,9 @@
 
 - `index.html` / `app.js` / `sw.js` / `manifest.json` / `icons/` — フロントエンド(GitHub Pagesで配信)
 - `scripts/send_notification.py` — 通知送信スクリプト(GitHub Actionsから定期実行)
+- `scripts/generate_report.py` — 回答をClaude APIでまとめて「じぶんレポート」を生成
 - `.github/workflows/send-checkin.yml` — 20分おきに送信スクリプトを実行するcron
+- `.github/workflows/generate-report.yml` — 毎月1日にレポートを生成するcron(手動実行も可)
 - Supabase (project `eabpkpfshikhhpowljan`) — テーブル: `checkin_questions` / `push_subscriptions` / `checkin_responses` / `notification_schedule` / `notification_log`
 
 ## 質問の種類(全100問)
@@ -38,6 +40,7 @@ Settings → Secrets and variables → Actions → New repository secret で以�
 | `SUPABASE_SERVICE_KEY` | Supabase ダッシュボード → **Settings → API Keys** で取得(**絶対に公開しない**)。新しい `sb_secret_...` キー、旧 `service_role` キーのどちらでも動く |
 | `VAPID_PRIVATE_KEY` | `vapid_private.pem` の中身をそのまま(ローカルに生成済み、Gitには含まれていない) |
 | `VAPID_SUBJECT` | `mailto:自分のメールアドレス` |
+| `ANTHROPIC_API_KEY` | じぶんレポート用。https://console.anthropic.com で発行(レポートを使わないなら不要) |
 
 Variables タブ(任意)に `APP_URL` として Pages の URL を追加しておくと通知ログに残しやすい。
 
@@ -81,6 +84,19 @@ insert into checkin_questions (text, category, qtype, options)
 values ('今週の満足度は?', 'general', 'scale',
         '{"min":"不満","max":"大満足"}');
 ```
+
+## じぶんレポート
+
+アプリ上部の「じぶんレポート」タブで読める、回答のふりかえり。
+
+- 生成タイミング: 毎月1日 JST 9:00 の cron。Actions タブから手動実行もできる(`days` で対象日数を変更可)
+- 対象: 直近30日の回答。5件未満のときはスキップする
+- 中身: いまのあなた / 大事にしているもの / 気づいていないかもしれないこと / 数字の傾向 / 次の1ヶ月の問い
+- 保存先: `self_reports` テーブル。RLSで閲覧のみ anon に開放、生成は service_role のみ
+- モデル: 既定は `claude-opus-5`(`REPORT_MODEL` 環境変数で変更可)
+
+プロンプトは `scripts/generate_report.py` の `SYSTEM_PROMPT`。褒めるためではなく、
+記録どうしを突き合わせて初めて見えることを返す方針にしてある。
 
 ## 履歴の見え方
 

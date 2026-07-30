@@ -20,7 +20,7 @@ import requests
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"].strip()
 REPORT_DAYS = int(os.environ.get("REPORT_DAYS", 30))
-MODEL = os.environ.get("REPORT_MODEL", "claude-opus-5")
+MODEL = os.environ.get("REPORT_MODEL", "claude-sonnet-5")
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 

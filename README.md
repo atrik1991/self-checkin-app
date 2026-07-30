@@ -93,7 +93,8 @@ values ('今週の満足度は?', 'general', 'scale',
 
 **1. アプリのボタン(主)** — Supabase Edge Function `generate-report` を呼ぶ。
 APIキーをブラウザに置けないため、生成はサーバー側で実行する。
-期間(30日/90日/全期間)とモデル(じっくり=Opus 5 / 標準=Sonnet 5 / 軽め=Haiku 4.5)を選べる。
+期間(30日/90日/全期間)とモデル(標準=Sonnet 5 / じっくり=Opus 5 / 軽め=Haiku 4.5)を選べる。
+既定は **Sonnet 5**(1回あたり約4円)。
 
 - キーは Supabase の **Edge Functions → Secrets** に `ANTHROPIC_API_KEY` として置く
 - モデル名はフロントから来た値をそのまま使わず、関数側の許可リストで検証する
@@ -107,7 +108,7 @@ APIキーをブラウザに置けないため、生成はサーバー側で実�
 - 対象: 既定は直近30日の回答。5件未満のときはスキップする
 - 中身: いまのあなた / 大事にしているもの / 気づいていないかもしれないこと / 数字の傾向 / 次の1ヶ月の問い
 - 保存先: `self_reports` テーブル。RLSで閲覧のみ anon に開放、生成は service_role のみ
-- モデル: 既定は `claude-opus-5`(`REPORT_MODEL` 環境変数で変更可)
+- モデル: 既定は `claude-sonnet-5`(`REPORT_MODEL` 環境変数で変更可)
 
 プロンプトは `scripts/generate_report.py` の `SYSTEM_PROMPT`。褒めるためではなく、
 記録どうしを突き合わせて初めて見えることを返す方針にしてある。

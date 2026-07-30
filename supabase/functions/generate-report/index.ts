@@ -15,7 +15,7 @@ const MODELS: Record<string, { effort?: string }> = {
   "claude-sonnet-5": { effort: "high" },
   "claude-haiku-4-5": {},
 };
-const DEFAULT_MODEL = "claude-opus-5";
+const DEFAULT_MODEL = "claude-sonnet-5";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",

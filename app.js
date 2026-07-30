@@ -414,12 +414,11 @@ function inlineMd(s) {
   return s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 
-async function loadReports() {
-  if (reportsLoaded) return;
-  const select = $("#report-select");
+async function loadReports(force = false) {
+  if (reportsLoaded && !force) return;
   try {
     reports = await sbGet(
-      "self_reports?select=id,period_start,period_end,response_count,content,created_at" +
+      "self_reports?select=id,period_start,period_end,response_count,content,model,created_at" +
         "&order=created_at.desc&limit=24"
     );
   } catch (e) {
@@ -427,24 +426,7 @@ async function loadReports() {
     reports = [];
   }
   reportsLoaded = true;
-
-  select.innerHTML = "";
-  if (reports.length === 0) {
-    select.style.display = "none";
-    $("#report-meta").textContent = "";
-    $("#report-body").innerHTML =
-      '<div class="report-empty">まだレポートがありません。<br>記録が5件以上たまると、月に1回まとめが届きます。</div>';
-    return;
-  }
-  select.style.display = "";
-  reports.forEach((r, i) => {
-    const opt = document.createElement("option");
-    opt.value = String(i);
-    opt.textContent = `${fmtDate(r.period_start)}〜${fmtDate(r.period_end)}`;
-    select.appendChild(opt);
-  });
-  select.value = "0";
-  renderReport(0);
+  renderReportList();
 }
 
 function fmtDate(isoDate) {
@@ -452,17 +434,88 @@ function fmtDate(isoDate) {
   return `${Number(m)}/${Number(d)}`;
 }
 
-function renderReport(index) {
-  const r = reports[index];
-  if (!r) return;
-  const created = new Date(r.created_at).toLocaleDateString("ja-JP", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+function renderReportList() {
+  const list = $("#report-list");
+  list.innerHTML = "";
+
+  if (reports.length === 0) {
+    list.innerHTML =
+      '<div class="report-empty">まだレポートがありません。<br>上のボタンから作れます。</div>';
+    return;
+  }
+
+  reports.forEach((r, i) => {
+    const when = new Date(r.created_at).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const item = document.createElement("div");
+    item.className = "rep-item" + (i === 0 ? " is-open" : "");
+
+    const head = document.createElement("button");
+    head.type = "button";
+    head.className = "rep-head";
+    head.innerHTML =
+      `<span class="rep-when">${escapeHtml(when)}</span>` +
+      `<span class="rep-sub">${r.response_count}件・${fmtDate(r.period_start)}〜${fmtDate(
+        r.period_end
+      )}</span>` +
+      `<span class="rep-caret">▼</span>`;
+
+    const body = document.createElement("div");
+    body.className = "rep-body";
+    body.innerHTML = renderMarkdown(r.content);
+    body.hidden = i !== 0; // 最新だけ開いた状態にする
+
+    head.addEventListener("click", () => {
+      body.hidden = !body.hidden;
+      item.classList.toggle("is-open", !body.hidden);
+    });
+
+    item.appendChild(head);
+    item.appendChild(body);
+    list.appendChild(item);
   });
-  $("#report-meta").textContent = `${r.response_count}件の記録から・${created}作成`;
-  $("#report-body").innerHTML = renderMarkdown(r.content);
+}
+
+async function generateReport() {
+  const btn = $("#generate-btn");
+  const status = $("#gen-status");
+  btn.disabled = true;
+  status.className = "";
+  status.textContent = "記録を読み込んで書いています…(1分ほどかかります)";
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/generate-report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        days: Number($("#gen-days").value),
+        model: $("#gen-model").value,
+      }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      status.className = "is-error";
+      status.textContent = data.error || "生成に失敗しました。";
+      return;
+    }
+
+    status.className = "is-done";
+    status.textContent = `できました(${data.response_count}件の記録から)`;
+    await loadReports(true);
+  } catch (e) {
+    console.error(e);
+    status.className = "is-error";
+    status.textContent = "通信に失敗しました。電波の良いところで試してください。";
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function switchView(view) {
@@ -559,9 +612,7 @@ async function init() {
     renderQuestion();
   });
   $("#day-select").addEventListener("change", (e) => renderDay(e.target.value));
-  $("#report-select").addEventListener("change", (e) =>
-    renderReport(Number(e.target.value))
-  );
+  $("#generate-btn").addEventListener("click", generateReport);
   document.querySelectorAll(".tab").forEach((t) => {
     t.addEventListener("click", () => switchView(t.dataset.view));
   });

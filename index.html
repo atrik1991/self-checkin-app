@@ -292,29 +292,78 @@
     box-shadow: 0 2px 8px rgba(34, 34, 59, 0.08);
   }
 
-  /* ---- レポート ---- */
-  #report-select {
+  /* ---- レポート生成 ---- */
+  .gen-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+  .gen-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin: 0 0 14px; }
+  .gen-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .gen-row select {
+    flex: 1;
+    min-width: 0;
     border: 1.5px solid var(--line);
     background: #fff;
     color: var(--text);
-    border-radius: 999px;
-    padding: 8px 14px;
-    font-size: 0.85rem;
+    border-radius: 12px;
+    padding: 11px 12px;
+    font-size: 0.9rem;
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
-    max-width: 60%;
   }
-  #report-select:focus { outline: none; border-color: var(--accent); }
-  #report-meta {
-    font-size: 0.75rem;
-    color: var(--muted);
+  .gen-row select:focus { outline: none; border-color: var(--accent); }
+  #generate-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(108, 92, 231, 0.25);
+    transition: all 0.15s;
+  }
+  #generate-btn:active { transform: scale(0.98); }
+  #generate-btn:disabled { background: #d8d9e8; box-shadow: none; cursor: default; }
+  #gen-status {
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin-top: 10px;
     font-weight: 600;
-    margin-bottom: 14px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--line);
+    color: var(--muted);
   }
-  #report-meta:empty { display: none; }
+  #gen-status.is-error { color: var(--coral); }
+  #gen-status.is-done { color: var(--mint); }
+  #gen-status:empty { display: none; }
+
+  .section-h { font-size: 1rem; margin: 28px 0 12px; }
+
+  /* ---- レポート一覧(アコーディオン) ---- */
+  .rep-item {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .rep-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: none;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+  }
+  .rep-when { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+  .rep-sub { font-size: 0.72rem; color: var(--muted); font-weight: 600; margin-left: auto; }
+  .rep-caret { font-size: 0.7rem; color: var(--muted); transition: transform 0.2s; }
+  .rep-item.is-open .rep-caret { transform: rotate(180deg); }
+  .rep-body { padding: 0 16px 18px; }
+  .rep-body[hidden] { display: none; }
   .r-h {
     font-size: 0.95rem;
     font-weight: 800;
@@ -326,7 +375,7 @@
   .r-p { font-size: 0.95rem; line-height: 1.85; margin: 0 0 12px; }
   .r-ul { margin: 0 0 12px; padding-left: 1.1em; }
   .r-ul li { font-size: 0.95rem; line-height: 1.8; margin-bottom: 6px; }
-  #report-body strong { color: var(--text); font-weight: 700; }
+  .rep-body strong { color: var(--text); font-weight: 700; }
   .report-empty {
     color: var(--muted);
     font-size: 0.9rem;
@@ -393,14 +442,27 @@
     </section>
 
     <section id="view-report" hidden>
-      <div class="history-head">
-        <h2>これまでのレポート</h2>
-        <select id="report-select"></select>
+      <div class="card gen-card">
+        <div class="gen-title">レポートを作る</div>
+        <p class="gen-desc">これまでの記録を読み返して、いまの自分をまとめます。</p>
+        <div class="gen-row">
+          <select id="gen-days">
+            <option value="30">直近30日</option>
+            <option value="90">直近90日</option>
+            <option value="365">全期間</option>
+          </select>
+          <select id="gen-model">
+            <option value="claude-opus-5">じっくり</option>
+            <option value="claude-sonnet-5">標準</option>
+            <option value="claude-haiku-4-5">軽め</option>
+          </select>
+        </div>
+        <button id="generate-btn" type="button">レポートを作る</button>
+        <div id="gen-status"></div>
       </div>
-      <div class="card" id="report-card">
-        <div id="report-meta"></div>
-        <div id="report-body"></div>
-      </div>
+
+      <h2 class="section-h">直近のレポート生成内容</h2>
+      <div id="report-list"></div>
     </section>
   </div>
 

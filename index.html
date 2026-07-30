@@ -265,6 +265,75 @@
     border: 1.5px dashed var(--line) !important;
   }
 
+  /* ---- タブ ---- */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    background: #eeeff7;
+    border-radius: 999px;
+    padding: 4px;
+    margin-bottom: 18px;
+  }
+  .tab {
+    flex: 1;
+    border: none;
+    background: none;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 10px 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab.is-active {
+    background: #fff;
+    color: var(--accent);
+    box-shadow: 0 2px 8px rgba(34, 34, 59, 0.08);
+  }
+
+  /* ---- レポート ---- */
+  #report-select {
+    border: 1.5px solid var(--line);
+    background: #fff;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    max-width: 60%;
+  }
+  #report-select:focus { outline: none; border-color: var(--accent); }
+  #report-meta {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .r-h {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin: 22px 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .r-h:first-child { margin-top: 0; }
+  .r-p { font-size: 0.95rem; line-height: 1.85; margin: 0 0 12px; }
+  .r-ul { margin: 0 0 12px; padding-left: 1.1em; }
+  .r-ul li { font-size: 0.95rem; line-height: 1.8; margin-bottom: 6px; }
+  #report-body strong { color: var(--text); font-weight: 700; }
+  .report-empty {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.8;
+    text-align: center;
+    padding: 20px 0;
+  }
+
   #toast {
     position: fixed;
     bottom: calc(24px + env(safe-area-inset-bottom));
@@ -292,6 +361,12 @@
       <p class="sub">ふと届く質問に、思いついたまま答えるだけ</p>
     </header>
 
+    <nav class="tabs">
+      <button class="tab is-active" data-view="checkin" type="button">チェックイン</button>
+      <button class="tab" data-view="report" type="button">じぶんレポート</button>
+    </nav>
+
+    <section id="view-checkin">
     <div id="install-banner">
       📲 通知を受け取るには、Safari の共有ボタンから「ホーム画面に追加」して、そのアイコンから開いてください。
     </div>
@@ -314,6 +389,18 @@
       <select id="day-select"></select>
     </div>
     <ul id="history-list"></ul>
+    </section>
+
+    <section id="view-report" hidden>
+      <div class="history-head">
+        <h2>これまでのレポート</h2>
+        <select id="report-select"></select>
+      </div>
+      <div class="card" id="report-card">
+        <div id="report-meta"></div>
+        <div id="report-body"></div>
+      </div>
+    </section>
   </div>
 
   <div id="toast"></div>

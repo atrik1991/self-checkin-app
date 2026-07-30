@@ -15,6 +15,7 @@ const CATEGORY_META = {
   hobby: { label: "趣味", emoji: "🎨" },
   future: { label: "未来", emoji: "🚀" },
   relationship: { label: "人間関係", emoji: "🤝" },
+  family: { label: "家族", emoji: "🏠" },
   growth: { label: "学び", emoji: "📚" },
   work: { label: "仕事", emoji: "💼" },
   money: { label: "お金", emoji: "💰" },
@@ -361,6 +362,118 @@ function renderDay(key) {
   }
 }
 
+// ==== じぶんレポート ====
+let reports = [];
+let reportsLoaded = false;
+
+// AIが返す Markdown のうち、見出し・箇条書き・強調だけを描画する簡易レンダラ。
+// escapeHtml を通したあとに適用するので、記法以外はそのままテキストとして出る。
+function renderMarkdown(md) {
+  const lines = escapeHtml(md).split("\n");
+  const out = [];
+  let para = [];
+  let list = [];
+
+  const flushPara = () => {
+    if (para.length) {
+      out.push(`<p class="r-p">${inlineMd(para.join("<br>"))}</p>`);
+      para = [];
+    }
+  };
+  const flushList = () => {
+    if (list.length) {
+      const items = list.map((i) => `<li>${inlineMd(i)}</li>`).join("");
+      out.push(`<ul class="r-ul">${items}</ul>`);
+      list = [];
+    }
+  };
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) {
+      flushPara();
+      flushList();
+    } else if (/^#{1,4}\s/.test(line)) {
+      flushPara();
+      flushList();
+      out.push(`<h3 class="r-h">${inlineMd(line.replace(/^#{1,4}\s/, ""))}</h3>`);
+    } else if (/^[-*]\s/.test(line)) {
+      flushPara();
+      list.push(line.replace(/^[-*]\s/, ""));
+    } else {
+      flushList();
+      para.push(line);
+    }
+  }
+  flushPara();
+  flushList();
+  return out.join("");
+}
+
+function inlineMd(s) {
+  return s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+async function loadReports() {
+  if (reportsLoaded) return;
+  const select = $("#report-select");
+  try {
+    reports = await sbGet(
+      "self_reports?select=id,period_start,period_end,response_count,content,created_at" +
+        "&order=created_at.desc&limit=24"
+    );
+  } catch (e) {
+    console.error(e);
+    reports = [];
+  }
+  reportsLoaded = true;
+
+  select.innerHTML = "";
+  if (reports.length === 0) {
+    select.style.display = "none";
+    $("#report-meta").textContent = "";
+    $("#report-body").innerHTML =
+      '<div class="report-empty">まだレポートがありません。<br>記録が5件以上たまると、月に1回まとめが届きます。</div>';
+    return;
+  }
+  select.style.display = "";
+  reports.forEach((r, i) => {
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = `${fmtDate(r.period_start)}〜${fmtDate(r.period_end)}`;
+    select.appendChild(opt);
+  });
+  select.value = "0";
+  renderReport(0);
+}
+
+function fmtDate(isoDate) {
+  const [, m, d] = isoDate.split("-");
+  return `${Number(m)}/${Number(d)}`;
+}
+
+function renderReport(index) {
+  const r = reports[index];
+  if (!r) return;
+  const created = new Date(r.created_at).toLocaleDateString("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  $("#report-meta").textContent = `${r.response_count}件の記録から・${created}作成`;
+  $("#report-body").innerHTML = renderMarkdown(r.content);
+}
+
+function switchView(view) {
+  document.querySelectorAll(".tab").forEach((t) => {
+    t.classList.toggle("is-active", t.dataset.view === view);
+  });
+  $("#view-checkin").hidden = view !== "checkin";
+  $("#view-report").hidden = view !== "report";
+  if (view === "report") loadReports();
+}
+
 // ==== 通知購読 ====
 async function updateSubscribeUI() {
   const banner = $("#install-banner");
@@ -446,6 +559,12 @@ async function init() {
     renderQuestion();
   });
   $("#day-select").addEventListener("change", (e) => renderDay(e.target.value));
+  $("#report-select").addEventListener("change", (e) =>
+    renderReport(Number(e.target.value))
+  );
+  document.querySelectorAll(".tab").forEach((t) => {
+    t.addEventListener("click", () => switchView(t.dataset.view));
+  });
 
   await loadAllQuestions();
   await setQuestionFromUrlOrRandom();
